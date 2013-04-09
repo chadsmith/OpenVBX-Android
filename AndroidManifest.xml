@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="org.openvbx"
+    android:versionCode="1"
+    android:versionName="0.9.0">
+    <application
+    	android:icon="@drawable/icon"
+    	android:label="@string/app_name"
+    	android:name="OpenVBXApplication"
+    	android:theme="@style/OpenVBX">
+        <activity
+        	android:name=".setup"
+            android:label="OpenVBX">
+            <intent-filter>
+            	<action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity
+        	android:name=".login"
+            android:label="Login">
+        </activity>
+        <activity
+        	android:name=".settings"
+            android:label="Settings">
+        </activity>
+        <activity
+        	android:name=".folders"
+            android:label="Messages">
+        </activity>
+        <activity
+        	android:name=".sms"
+            android:label="New Text">
+        </activity>
+        <activity
+        	android:name=".call"
+            android:label="New Call">
+        </activity>
+        <activity
+        	android:name=".inbox"
+            android:label="Inbox">
+        </activity>
+        <activity
+        	android:name=".message"
+            android:label="Details">
+        </activity>
+        <activity
+        	android:name=".annotate"
+            android:label="Add Note">
+        </activity>
+    </application>
+	<uses-sdk android:minSdkVersion="8" />
+	<uses-permission android:name="android.permission.READ_PHONE_STATE" />
+	<uses-permission android:name="android.permission.INTERNET" />
+	<uses-permission android:name="android.permission.WAKE_LOCK" />
+</manifest>

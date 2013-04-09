@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView
+	xmlns:android="http://schemas.android.com/apk/res/android"
+	android:layout_width="fill_parent"
+	android:layout_height="fill_parent">
+	<LinearLayout
+	    android:orientation="vertical"
+	    android:padding="10dip"
+	    android:layout_width="fill_parent"
+	    android:layout_height="fill_parent">
+		<ImageView
+			android:id="@+id/logo"
+			android:layout_width="200dip"
+			android:layout_height="158dip"
+			android:layout_marginTop="10dip"
+			android:layout_marginBottom="20dip"
+			android:adjustViewBounds="true"
+			android:layout_gravity="center_horizontal"
+			android:src="@drawable/logo" />
+		<EditText
+			android:id="@+id/email" 
+			android:layout_width="fill_parent"
+			android:layout_height="wrap_content"
+			android:hint="E-Mail"
+			android:singleLine="true"
+			android:inputType="textEmailAddress" />
+		<EditText
+			android:id="@+id/password" 
+			android:layout_width="fill_parent"
+			android:layout_height="wrap_content"
+			android:hint="Password"
+			android:singleLine="true"
+			android:inputType="textPassword" />
+		<Button
+		    android:id="@+id/login"
+		    android:layout_width="100dip"
+		    android:layout_height="wrap_content"
+		    android:text="Login" />
+	</LinearLayout>
+</ScrollView>
