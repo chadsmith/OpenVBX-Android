@@ -7,21 +7,11 @@ Please see the [issues](https://github.com/chadsmith/OpenVBX-Android/issues) sec
 ## Requirements
 
 * OpenVBX 0.90 or higher
-* Android 2.2 or higher
+* Android 4.0.3 or higher
 
-## Building From Eclipse
+## Building in Android Studio
 
-* Import the repo folder as an Android project. The `.project` included will cause it to have the name `org.openvbx`.
-* Create a `libs` folder at the root of the imported project.
-* Copy the following JAR files to the newly created `libs` folder:
-  * [android-async-http-1.4.3.jar](https://github.com/loopj/android-async-http/tree/master/releases)
-* Clone the [Android-PullToRefresh](https://github.com/chrisbanes/Android-PullToRefresh) repository
-  * Checkout tag `2.1.1`
-  * Import the `library` folder as an Android project named `PullToRefresh`
-
-The `org.openvbx` project should now build and be launchable and with no errors. If you still see errors try running the `Project > Clean...` menu and/or restart Eclipse.
-
-You might find that your device doesn't let you install your build if you already have the version from the Android Market installed.  This is standard Android security as it it won't let you directly replace an app that's been signed with a different key.  Manually uninstall OpenVBX from your device and you will then be able to install your own built version.
+`New > Import Project...` or `New > Project from Version Control > GitHub` should do the trick.
 
 ## Trademarks
 
@@ -31,8 +21,8 @@ You might find that your device doesn't let you install your build if you alread
 
 This project uses open source libraries such as:
 
-* [Android-PullToRefresh](https://github.com/chrisbanes/Android-PullToRefresh)
-* [android-async-http](https://github.com/loopj/android-async-http)
+* [RxAndroid](https://github.com/ReactiveX/RxAndroid)
+* [Retrofit](http://square.github.io/retrofit/)
 
 ## Contributing
 

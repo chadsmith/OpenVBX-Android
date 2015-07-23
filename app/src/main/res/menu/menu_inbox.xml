@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item
+        android:id="@+id/action_new_sms"
+        android:title="@string/new_sms"
+        android:icon="@drawable/ic_textsms_white_36dp"
+        android:orderInCategory="100"
+        app:showAsAction="ifRoom" />
+</menu>

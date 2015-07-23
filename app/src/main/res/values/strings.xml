@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">OpenVBX</string>
+    <string name="login">Login</string>
+    <string name="settings">Settings</string>
+    <string name="messages">Messages</string>
+    <string name="archive">Archive</string>
+    <string name="reply">Reply</string>
+    <string name="new_sms">New SMS</string>
+    <string name="new_call">New Call</string>
+    <string name="details">Details</string>
+    <string name="add_note">Add Note</string>
+    <string name="from">From</string>
+    <string name="status">Status</string>
+    <string name="assigned_to">Assigned to</string>
+    <string name="to">To</string>
+    <string name="message">Message</string>
+    <string name="send">Send</string>
+    <string name="next">Next</string>
+    <string name="openvbx_url">URL to your OpenVBX installation</string>
+    <string name="https_prefix">https://</string>
+    <string name="connect_to_openvbx">Connect to your OpenVBX</string>
+    <string name="save">Save</string>
+    <string name="settings_phone_description">When you place phone calls using OpenVBX, you\'ll be called at this number to complete the connection.</string>
+    <string name="phone_number">Phone Number</string>
+    <string name="password">Password</string>
+    <string name="email">E-Mail</string>
+    <string name="call">Call</string>
+    <string name="logout">Sign Out</string>
+    <string name="folders">Folders</string>
+    <string name="open">Open</string>
+    <string name="close">Close</string>
+    <string name="error">Error</string>
+    <string name="ok">OK</string>
+    <string name="login_failed">Your email address or password is invalid.</string>
+    <string name="invalid_endpoint">The URL provided doesn\'t seem to point to an OpenVBX installation.</string>
+    <string name="message_sent">Message sent</string>
+    <string name="message_archived">Message archived</string>
+    <string name="calling">Calling...</string>
+    <string name="saving">Saving...</string>
+</resources>

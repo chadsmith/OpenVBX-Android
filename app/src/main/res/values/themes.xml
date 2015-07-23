@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="OpenVBX" parent="@style/Theme.AppCompat.Light.NoActionBar">
+        <item name="android:typeface">normal</item>
+        <item name="android:textSize">15sp</item>
+        <item name="android:textColorPrimary">@color/primary_text</item>
+        <item name="android:textColorSecondary">@color/secondary_text</item>
+        <item name="colorPrimary">@color/primary</item>
+        <item name="colorPrimaryDark">@color/primary_dark</item>
+        <item name="colorAccent">@color/accent</item>
+        <item name="android:actionBarStyle">@style/OpenVBX.ActionBar</item>
+        <item name="actionBarStyle">@style/OpenVBX.ActionBar</item>
+        <item name="drawerArrowStyle">@style/OpenVBX.DrawerArrowToggle</item>
+    </style>
+    <style name="OpenVBX.ActionBar" parent="@style/Widget.AppCompat.ActionBar">
+        <item name="android:background">@color/primary</item>
+        <item name="background">@color/primary</item>
+        <item name="android:titleTextStyle">@style/OpenVBX.ActionBar.Title</item>
+        <item name="titleTextStyle">@style/OpenVBX.ActionBar.Title</item>
+        <item name="elevation">4dp</item>
+        <item name="colorControlNormal">@android:color/white</item>
+    </style>
+    <style name="OpenVBX.DrawerArrowToggle" parent="@style/Widget.AppCompat.DrawerArrowToggle">
+        <item name="color">@android:color/white</item>
+    </style>
+    <style name="OpenVBX.ActionBar.Title" parent="@style/TextAppearance.AppCompat.Widget.ActionBar.Title">
+        <item name="android:textColor">@android:color/white</item>
+        <item name="android:textSize">16sp</item>
+    </style>
+    <style name="OpenVBX.Button">
+        <item name="background">@color/accent</item>
+        <item name="android:colorButtonNormal">@color/accent</item>
+        <item name="android:textColor">@android:color/white</item>
+        <item name="android:paddingTop">10dp</item>
+        <item name="android:paddingBottom">10dp</item>
+    </style>
+</resources>

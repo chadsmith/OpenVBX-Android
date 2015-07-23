@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <string name="app_name">OpenVBX</string>
-    <string name="from">From</string>
-    <string name="status">Status</string>
-    <string name="assigned">Assigned to</string>
-</resources>

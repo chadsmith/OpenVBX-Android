@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item
+        android:id="@+id/action_add_note"
+        android:title="@string/add_note"
+        android:icon="@drawable/ic_speaker_notes_white_36dp"
+        android:orderInCategory="100"
+        app:showAsAction="ifRoom" />
+    <item
+        android:id="@+id/action_archive"
+        android:title="@string/archive"
+        android:icon="@drawable/ic_archive_white_36dp"
+        android:orderInCategory="200"
+        app:showAsAction="ifRoom" />
+</menu>

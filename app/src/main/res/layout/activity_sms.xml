@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+	xmlns:android="http://schemas.android.com/apk/res/android"
+	android:layout_width="fill_parent"
+	android:layout_height="wrap_content"
+    android:orientation="vertical">
+	<include layout="@layout/fragment_toolbar" />
+	<ScrollView
+		android:layout_width="fill_parent"
+		android:layout_height="fill_parent">
+		<LinearLayout
+			android:layout_width="fill_parent"
+			android:layout_height="wrap_content"
+			android:orientation="vertical"
+			android:padding="10dp" >
+			<Spinner
+				android:id="@+id/from"
+				android:layout_width="fill_parent"
+				android:layout_height="wrap_content"
+				android:prompt="@string/from" />
+			<EditText
+				android:id="@+id/to"
+				android:layout_width="fill_parent"
+				android:layout_height="wrap_content"
+				android:hint="@string/to"
+				android:inputType="phone"
+				android:singleLine="true"
+                android:layout_marginTop="10dp" />
+			<EditText
+				android:id="@+id/content"
+				android:layout_width="fill_parent"
+				android:layout_height="160dp"
+				android:hint="@string/message"
+				android:gravity="top"
+				android:inputType="textMultiLine"
+                android:layout_marginTop="10dp" />
+			<Button
+				android:id="@+id/send"
+				android:layout_width="fill_parent"
+				android:layout_height="wrap_content"
+				android:text="@string/send"
+                android:layout_marginTop="10dp"
+                android:theme="@style/OpenVBX.Button" />
+		</LinearLayout>
+	</ScrollView>
+</LinearLayout>

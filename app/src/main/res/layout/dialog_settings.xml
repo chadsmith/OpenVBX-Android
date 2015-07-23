@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+	xmlns:android="http://schemas.android.com/apk/res/android"
+	android:layout_width="fill_parent"
+	android:layout_height="fill_parent"
+	android:orientation="vertical"
+	android:padding="10dp">
+	<TextView
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		android:text="@string/settings"
+        android:textSize="16sp"
+        android:textStyle="bold" />
+	<EditText
+		android:id="@+id/device"
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		android:hint="@string/phone_number"
+        android:layout_marginTop="10dp"
+		android:layout_marginBottom="10dp"
+		android:inputType="phone"
+		android:singleLine="true" />
+	<TextView
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		android:text="@string/settings_phone_description"
+		android:textSize="14sp" />
+</LinearLayout>
