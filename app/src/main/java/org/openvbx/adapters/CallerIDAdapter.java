@@ -1,7 +1,5 @@
 package org.openvbx.adapters;
 
-import java.util.ArrayList;
-
 import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -10,6 +8,8 @@ import android.widget.BaseAdapter;
 import android.widget.TextView;
 
 import org.openvbx.models.CallerID;
+
+import java.util.ArrayList;
 
 public class CallerIDAdapter extends BaseAdapter {
 	public ArrayList<CallerID> callerids;

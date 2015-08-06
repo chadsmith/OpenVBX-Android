@@ -1,7 +1,5 @@
 package org.openvbx.adapters;
 
-import java.util.ArrayList;
-
 import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -11,6 +9,8 @@ import android.widget.TextView;
 
 import org.openvbx.R;
 import org.openvbx.models.Annotation;
+
+import java.util.ArrayList;
 
 public class AnnotationAdapter extends ArrayAdapter<Annotation> {
 	public ArrayList<Annotation> annotations;

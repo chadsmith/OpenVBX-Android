@@ -41,12 +41,12 @@ public class MessagesAdapter extends ArrayAdapter<Message> {
 		}
 		Message message = messages.get(position);
 		if (message != null) {
-			if("sms".equals(message.type))
-				((ImageView) view.findViewById(R.id.icon)).setImageResource(R.drawable.ic_message_white_48dp);
+            ImageView icon = (ImageView) view.findViewById(R.id.icon);
 			TextView caller = (TextView) view.findViewById(R.id.caller);
 			TextView folder = (TextView) view.findViewById(R.id.folder);
 			TextView short_summary = (TextView) view.findViewById(R.id.short_summary);
 			TextView received_time = (TextView) view.findViewById(R.id.received_time);
+            icon.setImageResource("sms".equals(message.type) ? R.drawable.ic_message_white_48dp : R.drawable.ic_voicemail_white_48dp);
 			caller.setText(message.caller);
 			folder.setText(message.folder);
 			if(message.folder.isEmpty())
