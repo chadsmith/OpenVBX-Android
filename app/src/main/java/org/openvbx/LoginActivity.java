@@ -36,27 +36,8 @@ public class LoginActivity extends AppCompatActivity {
 
         findViewById(R.id.next).setOnClickListener(new View.OnClickListener() {
             public void onClick(View view) {
-                if (hasValidEndpoint()) {
-                    OpenVBX.API.checkEndpoint()
-                            .compose(OpenVBX.<ClientResult>defaultSchedulers())
-                            .subscribe(new Subscriber<ClientResult>() {
-                                @Override
-                                public void onCompleted() {
-                                }
-
-                                @Override
-                                public void onError(Throwable e) {
-                                    endpoint.setText(null);
-                                    OpenVBX.error(mActivity, R.string.invalid_endpoint);
-                                }
-
-                                @Override
-                                public void onNext(ClientResult result) {
-                                    setup.setVisibility(View.GONE);
-                                    sign_in.setVisibility(View.VISIBLE);
-                                }
-                            });
-                }
+                if (hasValidEndpoint())
+                    checkEndpoint();
             }
         });
         endpoint.setText(OpenVBX.endpoint);
@@ -99,6 +80,37 @@ public class LoginActivity extends AppCompatActivity {
         });
 		email.setText(OpenVBX.email);
 		password.setText(OpenVBX.password);
+    }
+
+    private void checkEndpoint() {
+        OpenVBX.API.checkEndpoint()
+                .compose(OpenVBX.<ClientResult>defaultSchedulers())
+                .subscribe(new Subscriber<ClientResult>() {
+                    @Override
+                    public void onCompleted() {
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+                        String url = OpenVBX.endpoint;
+                        if (url.endsWith("index.php")) {
+                            endpoint.setText(null);
+                            OpenVBX.error(mActivity, R.string.invalid_endpoint);
+                        } else {
+                            if (!url.endsWith("/"))
+                                url += "/";
+                            url += "index.php";
+                            OpenVBX.saveEndpoint(url);
+                            checkEndpoint();
+                        }
+                    }
+
+                    @Override
+                    public void onNext(ClientResult result) {
+                        setup.setVisibility(View.GONE);
+                        sign_in.setVisibility(View.VISIBLE);
+                    }
+                });
     }
 
     private boolean hasValidEndpoint() {
