@@ -1,10 +1,13 @@
 package org.openvbx;
 
+import android.Manifest;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.telephony.TelephonyManager;
 import android.view.View;
@@ -16,14 +19,16 @@ import org.openvbx.models.Inbox;
 
 import rx.Subscriber;
 
-public class LoginActivity extends AppCompatActivity {
+public class LoginActivity extends AppCompatActivity implements ActivityCompat.OnRequestPermissionsResultCallback {
 
+    private static final int PERMISSION_REQUEST_PHONE_STATE = 0;
     private Activity mActivity;
     private LinearLayout setup;
     private EditText endpoint;
     private LinearLayout sign_in;
 	private EditText email;
 	private EditText password;
+    private Boolean canCheckPhoneState;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -46,6 +51,11 @@ public class LoginActivity extends AppCompatActivity {
         email = (EditText) findViewById(R.id.email);
         password = (EditText) findViewById(R.id.password);
 
+        if(ActivityCompat.checkSelfPermission(mActivity, Manifest.permission.READ_PHONE_STATE) == PackageManager.PERMISSION_GRANTED)
+            canCheckPhoneState = true;
+        else
+            ActivityCompat.requestPermissions(this, new String[]{ Manifest.permission.READ_PHONE_STATE }, PERMISSION_REQUEST_PHONE_STATE);
+
         findViewById(R.id.login).setOnClickListener(new View.OnClickListener() {
             public void onClick(View view) {
                 if (hasValidLogin()) {
@@ -67,10 +77,12 @@ public class LoginActivity extends AppCompatActivity {
                                 public void onNext(Inbox inbox) {
                                     OpenVBX.saveLoginCredentials();
                                     OpenVBX.inbox = inbox;
-                                    TelephonyManager telephonyManager = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
-                                    String device = telephonyManager.getLine1Number();
-                                    if (!device.isEmpty() && !Build.PRODUCT.equals("sdk") && !Build.PRODUCT.equals("google_sdk"))
-                                        OpenVBX.saveDevice(device);
+                                    if (canCheckPhoneState) {
+                                        TelephonyManager telephonyManager = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
+                                        String device = telephonyManager.getLine1Number();
+                                        if (!device.isEmpty() && !Build.PRODUCT.equals("sdk") && !Build.PRODUCT.equals("google_sdk"))
+                                            OpenVBX.saveDevice(device);
+                                    }
                                     startActivity(new Intent(getApplicationContext(), InboxActivity.class));
                                     finish();
                                 }
@@ -80,6 +92,17 @@ public class LoginActivity extends AppCompatActivity {
         });
 		email.setText(OpenVBX.email);
 		password.setText(OpenVBX.password);
+    }
+
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        switch (requestCode) {
+            case PERMISSION_REQUEST_PHONE_STATE:
+                if (grantResults.length == 1 && grantResults[0] == PackageManager.PERMISSION_GRANTED)
+                    canCheckPhoneState = true;
+                break;
+            default:
+                super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        }
     }
 
     private void checkEndpoint() {
