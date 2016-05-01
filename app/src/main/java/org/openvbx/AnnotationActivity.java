@@ -7,12 +7,14 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
 
+import org.openvbx.models.Message;
+
 import rx.functions.Action1;
 
 // TODO - move to dialog
 public class AnnotationActivity extends AppCompatActivity {
 
-	private String description = null;
+    private Message message;
 	
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -25,12 +27,13 @@ public class AnnotationActivity extends AppCompatActivity {
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         Bundle extras = getIntent().getExtras();
-        final int message_id = extras.getInt("message_id");
+        message = extras.getParcelable("message");
 		findViewById(R.id.add).setOnClickListener(new View.OnClickListener() {
 			public void onClick(View view) {
-				if (hasValidInput()) {
+                String description = ((EditText) findViewById(R.id.description)).getText().toString();
+                if (!description.isEmpty()) {
 					OpenVBX.toast(R.string.saving);
-                    OpenVBX.API.addAnnotation(message_id, "noted", description)
+                    OpenVBX.API.addAnnotation(message.id, "noted", description)
                             .compose(OpenVBX.<Void>defaultSchedulers())
                             .subscribe(new Action1<Void>() {
                                 @Override
@@ -41,11 +44,6 @@ public class AnnotationActivity extends AppCompatActivity {
 				}
 			}
 		});
-    }
-
-    private boolean hasValidInput() {
-    	description = ((EditText) findViewById(R.id.description)).getText().toString();
-    	return !description.isEmpty();
     }
 
     @Override

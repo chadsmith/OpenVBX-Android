@@ -23,14 +23,16 @@ import android.widget.TextView;
 
 import org.openvbx.adapters.AnnotationAdapter;
 import org.openvbx.adapters.UserAdapter;
+import org.openvbx.models.Annotation;
 import org.openvbx.models.Message;
 import org.openvbx.models.User;
+
+import java.util.ArrayList;
 
 import rx.functions.Action1;
 
 public class MessageActivity extends AppCompatActivity {
 
-    private int message_id;
     private Boolean isVoice = false;
 	private MediaPlayer mediaPlayer = null;
 	private SeekBar seekBar;
@@ -41,7 +43,7 @@ public class MessageActivity extends AppCompatActivity {
 	private Spinner assigned;
 	private UserAdapter userAdapter;
     private AnnotationAdapter annotationAdapter;
-	private Message mMessage = new Message();
+	private Message message;
 	private ListView annotationList;
 	private LinearLayout progress;
     private Boolean isPaused = false;
@@ -57,12 +59,14 @@ public class MessageActivity extends AppCompatActivity {
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         progress = (LinearLayout) findViewById(R.id.progress);
+
         Bundle extras = getIntent().getExtras();
-    	message_id = extras.getInt("message_id");
-        isVoice = "voice".equals(mMessage.type);
+        message = extras.getParcelable("message");
+
     	annotationList = (ListView) findViewById(R.id.annotations);
-        annotationAdapter = new AnnotationAdapter(this, R.layout.fragment_annotation_item, mMessage.annotations.items);
+        annotationAdapter = new AnnotationAdapter(this, R.layout.fragment_annotation_item, new ArrayList<Annotation>());
         annotationList.setAdapter(annotationAdapter);
+
     	status = (Spinner) findViewById(R.id.status);
     	ArrayAdapter<String> statusAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, statuses);
     	statusAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
@@ -70,7 +74,7 @@ public class MessageActivity extends AppCompatActivity {
     	status.setOnItemSelectedListener(new OnItemSelectedListener() {
             public void onItemSelected(AdapterView<?> parent, View view, int pos, long id) {
                 final String status = statuses[pos].toLowerCase();
-                OpenVBX.API.updateTicketStatus(message_id, status)
+                OpenVBX.API.updateTicketStatus(message.id, status)
                         .compose(OpenVBX.<Void>defaultSchedulers())
                         .subscribe(new Action1<Void>() {
                             @Override
@@ -83,13 +87,14 @@ public class MessageActivity extends AppCompatActivity {
             public void onNothingSelected(AdapterView<?> parent) {
             }
         });
+
     	assigned = (Spinner) findViewById(R.id.assigned);
-    	userAdapter = new UserAdapter(this, mMessage.active_users);
+    	userAdapter = new UserAdapter(this, new ArrayList<User>());
     	assigned.setAdapter(userAdapter);
     	assigned.setOnItemSelectedListener(new OnItemSelectedListener() {
             public void onItemSelected(AdapterView<?> parent, View view, int pos, long id) {
-                final int user_id = mMessage.active_users.get(pos).id;
-                OpenVBX.API.updateAssignment(message_id, user_id)
+                final int user_id = message.active_users.get(pos).id;
+                OpenVBX.API.updateAssignment(message.id, user_id)
                         .compose(OpenVBX.<Void>defaultSchedulers())
                         .subscribe(new Action1<Void>() {
                             @Override
@@ -102,39 +107,44 @@ public class MessageActivity extends AppCompatActivity {
             public void onNothingSelected(AdapterView<?> parent) {
             }
         });
+
     	progress.setVisibility(View.VISIBLE);
+
         findViewById(R.id.reply).setOnClickListener(new View.OnClickListener() {
             public void onClick(View view) {
                 Intent i = new Intent(getApplicationContext(), isVoice ? CallActivity.class : SmsActivity.class);
-                i.putExtra("from", mMessage.original_called);
-                i.putExtra("to", mMessage.original_caller);
-                i.putExtra("message_id", message_id);
+                i.putExtra("from", message.original_called);
+                i.putExtra("to", message.original_caller);
+                i.putExtra("message_id", message.id);
                 startActivity(i);
             }
         });
     }
 
     public void refresh() {
-        OpenVBX.API.getMessage(message_id)
+        OpenVBX.API.getMessage(message.id)
                 .compose(OpenVBX.<Message>defaultSchedulers())
                 .subscribe(new Action1<Message>() {
                     @Override
-                    public void call(Message message) {
-                        mMessage = message;
-                        isVoice = "voice".equals(message.type);
-                        invalidateOptionsMenu();
+                    public void call(Message update) {
+                        message = update;
+
                         ((TextView) findViewById(R.id.caller)).setText(message.caller);
                         ((TextView) findViewById(R.id.received_time)).setText(message.receivedTime());
+
                         TextView folder = (TextView) findViewById(R.id.folder);
                         folder.setText(message.folder);
                         if (message.folder.isEmpty())
                             folder.setVisibility(View.GONE);
+
                         ((TextView) findViewById(R.id.summary)).setText(message.summary);
-                        if (isVoice) {
+
+                        if (message.isVoice()) {
                             for (int i = 0; i < statuses.length; i++)
                                 if (statuses[i].toLowerCase().equals(message.ticket_status))
                                     status.setSelection(i);
                             status.setVisibility(View.VISIBLE);
+
                             if (!message.folder.isEmpty()) {
                                 message.active_users.add(0, new User(0, "Select a", "user"));
                                 userAdapter.update(message.active_users);
@@ -142,10 +152,12 @@ public class MessageActivity extends AppCompatActivity {
                                     assigned.setSelection(userAdapter.indexOf(message.assigned));
                                 assigned.setVisibility(View.VISIBLE);
                             }
-                            if (message.annotations.items.size() > 0) {
+
+                            if (!message.annotations.items.isEmpty()) {
                                 annotationAdapter.update(message.annotations.items);
                                 annotationList.setVisibility(View.VISIBLE);
                             }
+
                             status.setVisibility(View.VISIBLE);
                             play = (ImageView) findViewById(R.id.play);
                             seekBar = (SeekBar) findViewById(R.id.seekbar);
@@ -232,6 +244,7 @@ public class MessageActivity extends AppCompatActivity {
                             });
                             mediaPlayer.prepareAsync();
                         }
+
                         invalidateOptionsMenu();
                         progress.setVisibility(View.GONE);
                     }
@@ -242,12 +255,7 @@ public class MessageActivity extends AppCompatActivity {
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                if(showPause) {
-                    play.setImageResource(R.drawable.ic_pause_white_48dp);
-                }
-                else {
-                    play.setImageResource(R.drawable.ic_play_arrow_white_48dp);
-                }
+                play.setImageResource(showPause ? R.drawable.ic_pause_white_48dp : R.drawable.ic_play_arrow_white_48dp);
             }
         });
     }
@@ -275,12 +283,12 @@ public class MessageActivity extends AppCompatActivity {
                 break;
             case R.id.action_add_note:
                 i = new Intent(getApplicationContext(), AnnotationActivity.class);
-                i.putExtra("message_id", message_id);
+                i.putExtra("message", message);
                 startActivity(i);
                 break;
             case R.id.action_archive:
                 // TODO - confirm before deleting
-                OpenVBX.API.archiveMessage(message_id, true)
+                OpenVBX.API.archiveMessage(message.id, true)
                         .compose(OpenVBX.<Void>defaultSchedulers())
                         .subscribe(new Action1<Void>() {
                             @Override

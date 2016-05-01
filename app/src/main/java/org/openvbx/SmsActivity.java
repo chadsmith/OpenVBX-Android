@@ -18,10 +18,8 @@ public class SmsActivity extends AppCompatActivity {
 
     private Activity mActivity;
     private Spinner spinner;
-	private String from = null;
-	private String to = null;
+    private EditText toInput;
 	private int message_id = -1;
-	private String content = null;
 
     // TODO - switch send button to FAB
     @Override
@@ -38,23 +36,30 @@ public class SmsActivity extends AppCompatActivity {
         spinner = (Spinner) findViewById(R.id.from);
         CallerIDAdapter adapter = new CallerIDAdapter(this, OpenVBX.getCallerIDs("sms"));
         spinner.setAdapter(adapter);
+
+        toInput = (EditText) findViewById(R.id.to);
+
         Bundle extras = getIntent().getExtras();
         if(extras != null) {
         	spinner.setSelection(adapter.indexOf(extras.getString("from")));
-        	((EditText) findViewById(R.id.to)).setText(extras.getString("to"));
+            toInput.setText(extras.getString("to"));
         	message_id = extras.getInt("message_id", -1);
         }
+
 		findViewById(R.id.send).setOnClickListener(new View.OnClickListener() {
             public void onClick(View view) {
-                if (hasValidInput()) {
+                String from = spinner.getSelectedItem().toString();
+                String to = toInput.getText().toString().trim();
+                String content = ((EditText) findViewById(R.id.content)).getText().toString();
+                if (!from.isEmpty() && !to.isEmpty() && !content.isEmpty()) {
                     (message_id == -1 ? OpenVBX.API.sendMessage(from, to, content) : OpenVBX.API.sendReply(message_id, from, to, content))
                             .compose(OpenVBX.<MessageResult>defaultSchedulers())
                             .subscribe(new Action1<MessageResult>() {
                                 @Override
                                 public void call(MessageResult result) {
-                                    if (result.error) {
+                                    if (result.error)
                                         OpenVBX.error(mActivity, result.message);
-                                    } else {
+                                    else {
                                         OpenVBX.toast(R.string.message_sent);
                                         finish();
                                     }
@@ -63,13 +68,6 @@ public class SmsActivity extends AppCompatActivity {
                 }
             }
         });
-    }
-
-    private boolean hasValidInput() {
-    	from = spinner.getSelectedItem().toString();
-    	to = ((EditText) findViewById(R.id.to)).getText().toString();
-    	content = ((EditText) findViewById(R.id.content)).getText().toString();
-    	return !from.isEmpty() && !to.isEmpty() && !content.isEmpty();
     }
 
     @Override

@@ -18,8 +18,7 @@ public class CallActivity extends AppCompatActivity {
 
     private Activity mActivity;
     private Spinner spinner;
-	private String callerid = null;
-	private String to = null;
+    private EditText toInput;
 	private int message_id = -1;
 
     // TODO - switch call button to FAB
@@ -38,23 +37,29 @@ public class CallActivity extends AppCompatActivity {
         spinner = (Spinner) findViewById(R.id.callerid);
         CallerIDAdapter adapter = new CallerIDAdapter(this, OpenVBX.getCallerIDs("voice"));
         spinner.setAdapter(adapter);
+
+        toInput = (EditText) findViewById(R.id.to);
+
         Bundle extras = getIntent().getExtras();
         if(extras != null) {
         	spinner.setSelection(adapter.indexOf(extras.getString("from")));
-        	((EditText) findViewById(R.id.to)).setText(extras.getString("to"));
+            toInput.setText(extras.getString("to"));
         	message_id = extras.getInt("message_id", -1);
         }
+
 		findViewById(R.id.call).setOnClickListener(new View.OnClickListener() {
 			public void onClick(View view) {
-				if(hasValidInput()) {
+                String callerid = spinner.getSelectedItem().toString();
+                String to = toInput.getText().toString().trim();
+                if(!callerid.isEmpty() && !to.isEmpty()) {
                     (message_id == -1 ? OpenVBX.API.sendCall(callerid, OpenVBX.device, to) : OpenVBX.API.sendCallback(message_id, callerid, OpenVBX.device, to))
                             .compose(OpenVBX.<MessageResult>defaultSchedulers())
                             .subscribe(new Action1<MessageResult>() {
                                 @Override
                                 public void call(MessageResult result) {
-                                    if (result.error) {
+                                    if (result.error)
                                         OpenVBX.error(mActivity, result.message);
-                                    } else {
+                                    else {
                                         OpenVBX.toast(R.string.calling);
                                         finish();
                                     }
@@ -63,12 +68,6 @@ public class CallActivity extends AppCompatActivity {
 				}
 			}
 		});
-    }
-
-    private boolean hasValidInput() {
-    	callerid = spinner.getSelectedItem().toString();
-    	to = ((EditText) findViewById(R.id.to)).getText().toString();
-    	return !callerid.isEmpty() && !to.isEmpty();
     }
 
     @Override

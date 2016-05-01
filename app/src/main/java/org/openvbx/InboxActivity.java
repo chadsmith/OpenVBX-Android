@@ -46,12 +46,18 @@ public class InboxActivity extends AppCompatActivity {
 	private LinearLayout progress;
 	private SwipeRefreshLayout refreshView;
 
-    private Folder mFolder = new Folder();
+    private Inbox inbox;
+    private Folder folder = new Folder();
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_inbox);
+
+        Bundle extras = getIntent().getExtras();
+
+        if(extras != null)
+            inbox = extras.getParcelable("inbox");
 
         mContext = getApplicationContext();
 
@@ -111,7 +117,7 @@ public class InboxActivity extends AppCompatActivity {
 		refreshView = (SwipeRefreshLayout) findViewById(R.id.refresh);
         ListView listView = (ListView) findViewById(R.id.list);
 
-        messagesAdapter = new MessagesAdapter(this, R.layout.fragment_inbox_item, mFolder.messages.items);
+        messagesAdapter = new MessagesAdapter(this, R.layout.fragment_inbox_item, folder.messages.items);
 
         if(OpenVBX.endpoint == null || OpenVBX.email == null || OpenVBX.password == null)
             requireLogin();
@@ -126,7 +132,7 @@ public class InboxActivity extends AppCompatActivity {
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 Message message = messagesAdapter.get(position);
                 Intent i = new Intent(mContext, MessageActivity.class);
-                i.putExtra("message_id", message.id);
+                i.putExtra("message", message);
                 startActivity(i);
             }
         });
@@ -187,12 +193,12 @@ public class InboxActivity extends AppCompatActivity {
         OpenVBX.API.getFolders()
                 .flatMap(new Func1<Inbox, Observable<Folder>>() {
                     @Override
-                    public Observable<Folder> call(Inbox inbox) {
-                        OpenVBX.inbox = inbox;
-                        if (mFolder.id != -1)
-                            return OpenVBX.API.getFolder(mFolder.id);
-                        else if (!OpenVBX.inbox.folders.isEmpty())
-                            return OpenVBX.API.getFolder(OpenVBX.inbox.folders.get(0).id);
+                    public Observable<Folder> call(Inbox update) {
+                        inbox = update;
+                        if (folder.id != -1)
+                            return OpenVBX.API.getFolder(folder.id);
+                        else if (!inbox.folders.isEmpty())
+                            return OpenVBX.API.getFolder(inbox.folders.get(0).id);
                         else
                             return Observable.just(new Folder());
                     }
@@ -201,10 +207,10 @@ public class InboxActivity extends AppCompatActivity {
                 .subscribe(new Action1<Folder>() {
                     @Override
                     public void call(Folder selected) {
-                        mFolder = selected;
+                        folder = selected;
                         updateNavigationMenu();
-                        messagesAdapter.update(mFolder.messages.items);
-                        toolbar.setTitle(mFolder.name == null ? getString(R.string.app_name) : mFolder.name);
+                        messagesAdapter.update(folder.messages.items);
+                        toolbar.setTitle(folder.name == null ? getString(R.string.app_name) : folder.name);
                         progress.setVisibility(View.GONE);
                         refreshView.setRefreshing(false);
                     }
@@ -214,8 +220,8 @@ public class InboxActivity extends AppCompatActivity {
     private void updateNavigationMenu() {
         Menu menu = navigationView.getMenu();
         menu.removeGroup(R.id.primary_group);
-        for(int i = 0; i < OpenVBX.inbox.folders.size(); i++) {
-            Folder folder = OpenVBX.inbox.folders.get(i);
+        for(int i = 0; i < inbox.folders.size(); i++) {
+            Folder folder = inbox.folders.get(i);
             MenuItem menuItem = menu.add(R.id.primary_group, i, i, folder.name);
             menuItem.setIcon("inbox".equals(folder.type) ? R.drawable.ic_inbox_white_48dp : R.drawable.ic_folder_white_48dp);
         }
@@ -235,15 +241,15 @@ public class InboxActivity extends AppCompatActivity {
     }
 
     private void selectFolder(int folder_id) {
-        if(mFolder.id != folder_id)
+        if(folder.id != folder_id)
             progress.setVisibility(View.VISIBLE);
         OpenVBX.API.getFolder(folder_id)
                 .compose(OpenVBX.<Folder>defaultSchedulers())
                 .subscribe(new Action1<Folder>() {
                     @Override
-                    public void call(Folder folder) {
-                        mFolder = folder;
-                        messagesAdapter.update(mFolder.messages.items);
+                    public void call(Folder selected) {
+                        folder = selected;
+                        messagesAdapter.update(folder.messages.items);
                         toolbar.setTitle(folder.name);
                         progress.setVisibility(View.GONE);
                     }

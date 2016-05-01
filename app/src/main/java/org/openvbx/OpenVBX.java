@@ -17,15 +17,22 @@ import org.openvbx.models.Inbox;
 import org.openvbx.models.Message;
 import org.openvbx.models.MessageResult;
 
+import java.io.IOException;
 import java.util.ArrayList;
 
-import retrofit.RequestInterceptor;
-import retrofit.RestAdapter;
-import retrofit.http.Field;
-import retrofit.http.FormUrlEncoded;
-import retrofit.http.GET;
-import retrofit.http.POST;
-import retrofit.http.Path;
+import okhttp3.Interceptor;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
+import okhttp3.logging.HttpLoggingInterceptor;
+import retrofit2.Retrofit;
+import retrofit2.adapter.rxjava.RxJavaCallAdapterFactory;
+import retrofit2.converter.gson.GsonConverterFactory;
+import retrofit2.http.Field;
+import retrofit2.http.FormUrlEncoded;
+import retrofit2.http.GET;
+import retrofit2.http.POST;
+import retrofit2.http.Path;
 import rx.Observable;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.schedulers.Schedulers;
@@ -38,7 +45,6 @@ public class OpenVBX extends Application {
 	public static String email = null;
 	public static String password = null;
 	public static String device = null;
-    public static Inbox inbox = new Inbox();
     public static Context mContext;
 
     public static VbxService API;
@@ -62,13 +68,49 @@ public class OpenVBX extends Application {
 
     private static VbxService getApiInstance() {
 
-        // Use RestAdapter.LogLevel.NONE to disable logging
-        RestAdapter.LogLevel logger = RestAdapter.LogLevel.FULL;
+        // Use HttpLoggingInterceptor.Level.NONE to disable logging
+        HttpLoggingInterceptor logger = new HttpLoggingInterceptor();
+        logger.setLevel(HttpLoggingInterceptor.Level.BODY);
 
-        return new RestAdapter.Builder()
-                .setLogLevel(logger)
-                .setEndpoint(endpoint)
-                .setRequestInterceptor(new VBXRequestInterceptor())
+        Interceptor setAcceptType = new Interceptor() {
+            @Override
+            public Response intercept(Chain chain) throws IOException {
+                Request request = chain.request();
+                Request typedRequest = request
+                        .newBuilder()
+                        .header("Accept", "application/json")
+                        .build();
+                return chain.proceed(typedRequest);
+            }
+        };
+
+        Interceptor setAuthorization = new Interceptor() {
+            @Override
+            public Response intercept(Chain chain) throws IOException {
+                Request request = chain.request();
+                if(email != null && password != null) {
+                    String auth = Base64.encodeToString((email + ":" + password).getBytes(), Base64.NO_WRAP);
+                    Request typedRequest = request
+                            .newBuilder()
+                            .header("Authorization", String.format("Basic %s", auth))
+                            .build();
+                    return chain.proceed(typedRequest);
+                }
+                return chain.proceed(request);
+            }
+        };
+
+        OkHttpClient apiClient = new OkHttpClient.Builder()
+                .addInterceptor(logger)
+                .addInterceptor(setAcceptType)
+                .addInterceptor(setAuthorization)
+                .build();
+
+        return new Retrofit.Builder()
+                .baseUrl(endpoint)
+                .client(apiClient)
+                .addCallAdapterFactory(RxJavaCallAdapterFactory.create())
+                .addConverterFactory(GsonConverterFactory.create())
                 .build()
                 .create(VbxService.class);
     }
@@ -76,25 +118,33 @@ public class OpenVBX extends Application {
 	public static ArrayList<CallerID> getCallerIDs(String type) {
 		if("voice".equals(type))
 			return callerIDs;
-		ArrayList<CallerID> res = new ArrayList<>();
-		for(int i = 0; i < callerIDs.size(); i++)
-			if(callerIDs.get(i).capabilities.sms)
-				res.add(callerIDs.get(i));
-		return res;
+		ArrayList<CallerID> result = new ArrayList<>();
+        for(CallerID callerID : callerIDs)
+            if(callerID.hasSms())
+                result.add(callerID);
+		return result;
 	}
 
-	public static void saveEndpoint(String newEndpoint) {
-		endpoint = newEndpoint;
-		settings.edit().putString("endpoint", endpoint).apply();
+    public static void setEndpoint(String endpoint) {
+        OpenVBX.endpoint = endpoint;
         API = getApiInstance();
+    }
+
+	public static void saveEndpoint() {
+		settings.edit().putString("endpoint", endpoint).apply();
 	}
 
-	public static void saveLoginCredentials() {
+    public static void setLogin(String email, String password) {
+        OpenVBX.email = email;
+        OpenVBX.password = password;
+    }
+
+	public static void saveLogin() {
 		settings.edit().putString("email", email).putString("password", password).apply();
 	}
 
-	public static void saveDevice(String newDevice) {
-        device = newDevice;
+	public static void saveDevice(String device) {
+        OpenVBX.device = device;
         settings.edit().putString("device", device).apply();
 	}
 
@@ -129,7 +179,7 @@ public class OpenVBX extends Application {
         });
     }
 
-    public static void toast( int id) {
+    public static void toast(int id) {
         toast(mContext.getString(id));
     }
 
@@ -191,22 +241,6 @@ public class OpenVBX extends Application {
                         .observeOn(AndroidSchedulers.mainThread());
             }
         };
-    }
-
-    public static class VBXRequestInterceptor implements RequestInterceptor {
-
-        @Override
-        public void intercept(RequestFacade requestFacade) {
-            requestFacade.addHeader("Accept", "application/json");
-            if(email != null && password != null)
-                requestFacade.addHeader("Authorization", encodeCredentialsForBasicAuth());
-        }
-
-        private String encodeCredentialsForBasicAuth() {
-            String emailAndPassword = email + ":" + password;
-            return "Basic " + Base64.encodeToString(emailAndPassword.getBytes(), Base64.NO_WRAP);
-        }
-
     }
 
 }

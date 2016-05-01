@@ -23,11 +23,18 @@ public class LoginActivity extends AppCompatActivity implements ActivityCompat.O
 
     private static final int PERMISSION_REQUEST_PHONE_STATE = 0;
     private Activity mActivity;
-    private LinearLayout setup;
-    private EditText endpoint;
-    private LinearLayout sign_in;
-	private EditText email;
-	private EditText password;
+    private Context mContext;
+
+    private LinearLayout setupView;
+    private EditText endpointInput;
+    private String endpoint;
+
+    private LinearLayout loginView;
+	private EditText emailInput;
+	private EditText passwordInput;
+    private String email;
+    private String password;
+
     private Boolean canCheckPhoneState;
 
     @Override
@@ -36,29 +43,37 @@ public class LoginActivity extends AppCompatActivity implements ActivityCompat.O
         setContentView(R.layout.activity_login);
 
         mActivity = this;
-        setup = (LinearLayout) findViewById(R.id.setup);
-        endpoint = (EditText) findViewById(R.id.endpoint);
+        mContext = getApplicationContext();
+        setupView = (LinearLayout) findViewById(R.id.setup);
+        endpointInput = (EditText) findViewById(R.id.endpoint);
 
         findViewById(R.id.next).setOnClickListener(new View.OnClickListener() {
             public void onClick(View view) {
-                if (hasValidEndpoint())
+                endpoint = endpointInput.getText().toString().trim();
+                if(!endpoint.isEmpty()) {
+                    OpenVBX.setEndpoint(endpoint);
                     checkEndpoint();
+                }
             }
         });
-        endpoint.setText(OpenVBX.endpoint);
 
-        sign_in = (LinearLayout) findViewById(R.id.sign_in);
-        email = (EditText) findViewById(R.id.email);
-        password = (EditText) findViewById(R.id.password);
+        endpointInput.setText(OpenVBX.endpoint);
 
         if(ActivityCompat.checkSelfPermission(mActivity, Manifest.permission.READ_PHONE_STATE) == PackageManager.PERMISSION_GRANTED)
             canCheckPhoneState = true;
         else
             ActivityCompat.requestPermissions(this, new String[]{ Manifest.permission.READ_PHONE_STATE }, PERMISSION_REQUEST_PHONE_STATE);
 
+        loginView = (LinearLayout) findViewById(R.id.sign_in);
+        emailInput = (EditText) findViewById(R.id.email);
+        passwordInput = (EditText) findViewById(R.id.password);
+
         findViewById(R.id.login).setOnClickListener(new View.OnClickListener() {
             public void onClick(View view) {
-                if (hasValidLogin()) {
+                email = emailInput.getText().toString().trim();
+                password = passwordInput.getText().toString();
+                if(!email.isEmpty() && !password.isEmpty()) {
+                    OpenVBX.setLogin(email, password);
                     OpenVBX.API.getFolders()
                             .compose(OpenVBX.<Inbox>defaultSchedulers())
                             .subscribe(new Subscriber<Inbox>() {
@@ -68,30 +83,32 @@ public class LoginActivity extends AppCompatActivity implements ActivityCompat.O
 
                                 @Override
                                 public void onError(Throwable e) {
-                                    password.setText(null);
-                                    OpenVBX.password = null;
+                                    OpenVBX.setLogin(email, null);
+                                    passwordInput.setText(null);
                                     OpenVBX.error(mActivity, R.string.login_failed);
                                 }
 
                                 @Override
                                 public void onNext(Inbox inbox) {
-                                    OpenVBX.saveLoginCredentials();
-                                    OpenVBX.inbox = inbox;
+                                    OpenVBX.saveLogin();
                                     if (canCheckPhoneState) {
                                         TelephonyManager telephonyManager = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
                                         String device = telephonyManager.getLine1Number();
                                         if (!device.isEmpty() && !Build.PRODUCT.equals("sdk") && !Build.PRODUCT.equals("google_sdk"))
                                             OpenVBX.saveDevice(device);
                                     }
-                                    startActivity(new Intent(getApplicationContext(), InboxActivity.class));
+                                    Intent i = new Intent(mContext, InboxActivity.class);
+                                    i.putExtra("inbox", inbox);
+                                    startActivity(i);
                                     finish();
                                 }
                             });
                 }
             }
         });
-		email.setText(OpenVBX.email);
-		password.setText(OpenVBX.password);
+
+        emailInput.setText(OpenVBX.email);
+        passwordInput.setText(OpenVBX.password);
     }
 
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
@@ -115,40 +132,26 @@ public class LoginActivity extends AppCompatActivity implements ActivityCompat.O
 
                     @Override
                     public void onError(Throwable e) {
-                        String url = OpenVBX.endpoint;
-                        if (url.endsWith("index.php")) {
-                            endpoint.setText(null);
+                        if (endpoint.endsWith("index.php")) {
+                            OpenVBX.setEndpoint(null);
+                            endpointInput.setText(null);
                             OpenVBX.error(mActivity, R.string.invalid_endpoint);
                         } else {
-                            if (!url.endsWith("/"))
-                                url += "/";
-                            url += "index.php";
-                            OpenVBX.saveEndpoint(url);
+                            if (!endpoint.endsWith("/"))
+                                endpoint += "/";
+                            endpoint += "index.php";
+                            OpenVBX.setEndpoint(endpoint);
                             checkEndpoint();
                         }
                     }
 
                     @Override
                     public void onNext(ClientResult result) {
-                        setup.setVisibility(View.GONE);
-                        sign_in.setVisibility(View.VISIBLE);
+                        OpenVBX.saveEndpoint();
+                        setupView.setVisibility(View.GONE);
+                        loginView.setVisibility(View.VISIBLE);
                     }
                 });
-    }
-
-    private boolean hasValidEndpoint() {
-        String url = endpoint.getText().toString();
-        if(!url.isEmpty()) {
-            OpenVBX.saveEndpoint(url);
-            return true;
-        }
-        return false;
-    }
-
-    private boolean hasValidLogin() {
-    	OpenVBX.email = email.getText().toString();
-		OpenVBX.password = password.getText().toString();
-    	return !OpenVBX.email.isEmpty() && !OpenVBX.password.isEmpty();
     }
 
 }
